@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Play, Pause, RotateCcw, Timer } from 'lucide-react';
+import { Play, Pause, RotateCcw, Timer, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import TimeSelector from './TimeSelector';
@@ -221,9 +221,22 @@ const CountdownTimer = () => {
             />
 
             {isActive && (
-              <div className="text-center text-sm text-muted-foreground bg-muted p-3 rounded-lg">
-                <p className="font-medium">Press SPACEBAR to record each question</p>
-                <p>A ding sound will confirm your input</p>
+              <div className="space-y-4">
+                <div className="text-center text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+                  <p className="font-medium">Press SPACEBAR to record each question</p>
+                  <p>A ding sound will confirm your input</p>
+                </div>
+                
+                <Button
+                  onClick={handleSpacebarPress}
+                  disabled={isPaused}
+                  className="w-full h-12"
+                  size="lg"
+                  variant="outline"
+                >
+                  <Check className="h-5 w-5 mr-2" />
+                  Record Question
+                </Button>
               </div>
             )}
           </CardContent>
