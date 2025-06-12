@@ -40,6 +40,16 @@ const ProgressReport: React.FC<ProgressReportProps> = ({
     ? Math.max(...questions.map(q => q.timeTaken))
     : 0;
 
+  // Create table data with starting row for question 0
+  const tableData = [
+    {
+      questionNumber: 0,
+      elapsedTime: 0,
+      timeTaken: 0,
+    },
+    ...questions
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -95,7 +105,7 @@ const ProgressReport: React.FC<ProgressReportProps> = ({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {questions.map((question) => (
+                  {tableData.map((question) => (
                     <TableRow key={question.questionNumber}>
                       <TableCell className="text-center font-medium">
                         {question.questionNumber}
@@ -108,13 +118,6 @@ const ProgressReport: React.FC<ProgressReportProps> = ({
                       </TableCell>
                     </TableRow>
                   ))}
-                  {questions.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={3} className="text-center text-muted-foreground">
-                        No questions were answered during this session
-                      </TableCell>
-                    </TableRow>
-                  )}
                 </TableBody>
               </Table>
             </div>
