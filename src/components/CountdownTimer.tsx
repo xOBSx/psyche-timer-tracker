@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Play, Pause, RotateCcw, Timer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -65,7 +64,7 @@ const CountdownTimer = () => {
 
     const currentTime = Date.now();
     const totalElapsedTime = Math.floor((currentTime - startTime - pausedTime) / 1000);
-    const questionNumber = questions.length; // This will be 1 for first question, 2 for second, etc.
+    const questionNumber = questions.length + 1; // Start from 1 for actual questions
     
     const lastElapsedTime = questions.length > 0 ? questions[questions.length - 1].elapsedTime : 0;
     const timeTaken = totalElapsedTime - lastElapsedTime;

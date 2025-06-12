@@ -40,14 +40,15 @@ const ProgressReport: React.FC<ProgressReportProps> = ({
     ? Math.max(...questions.map(q => q.timeTaken))
     : 0;
 
-  // Create table data with starting row for question 0
+  // Create table data with starting row for question 0, using unique keys
   const tableData = [
     {
       questionNumber: 0,
       elapsedTime: 0,
       timeTaken: 0,
+      key: 'start-row', // Unique key for the starting row
     },
-    ...questions
+    ...questions.map(q => ({ ...q, key: `question-${q.questionNumber}` }))
   ];
 
   return (
@@ -106,7 +107,7 @@ const ProgressReport: React.FC<ProgressReportProps> = ({
                 </TableHeader>
                 <TableBody>
                   {tableData.map((question) => (
-                    <TableRow key={question.questionNumber}>
+                    <TableRow key={question.key}>
                       <TableCell className="text-center font-medium">
                         {question.questionNumber}
                       </TableCell>
