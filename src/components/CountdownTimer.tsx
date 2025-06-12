@@ -19,6 +19,7 @@ const CountdownTimer = () => {
   const [isActive, setIsActive] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
+  const [pausedTime, setPausedTime] = useState(0); // Total time spent paused
   const [questions, setQuestions] = useState<QuestionData[]>([]);
   const [showReport, setShowReport] = useState(false);
   
@@ -63,21 +64,21 @@ const CountdownTimer = () => {
     if (!isActive || isPaused || !startTime) return;
 
     const currentTime = Date.now();
-    const elapsedTime = Math.floor((currentTime - startTime) / 1000);
-    const questionNumber = questions.length + 1;
+    const totalElapsedTime = Math.floor((currentTime - startTime - pausedTime) / 1000);
+    const questionNumber = questions.length; // This will be 1 for first question, 2 for second, etc.
     
     const lastElapsedTime = questions.length > 0 ? questions[questions.length - 1].elapsedTime : 0;
-    const timeTaken = elapsedTime - lastElapsedTime;
+    const timeTaken = totalElapsedTime - lastElapsedTime;
 
     const newQuestion: QuestionData = {
       questionNumber,
-      elapsedTime,
+      elapsedTime: totalElapsedTime,
       timeTaken,
     };
 
     setQuestions(prev => [...prev, newQuestion]);
     playDingSound();
-  }, [isActive, isPaused, startTime, questions, playDingSound]);
+  }, [isActive, isPaused, startTime, pausedTime, questions, playDingSound]);
 
   // Keyboard event listener
   useEffect(() => {
@@ -125,7 +126,8 @@ const CountdownTimer = () => {
     if (!isActive) {
       setTimeLeft(duration);
       setStartTime(Date.now());
-      setQuestions([{ questionNumber: 0, elapsedTime: 0, timeTaken: 0 }]);
+      setPausedTime(0);
+      setQuestions([]);
       setShowReport(false);
     }
     
@@ -134,6 +136,12 @@ const CountdownTimer = () => {
   };
 
   const handlePause = () => {
+    if (isPaused) {
+      // Resuming - add the pause duration to total paused time
+      const currentTime = Date.now();
+      const pauseDuration = currentTime - (startTime || 0) - (duration - timeLeft) * 1000 - pausedTime;
+      setPausedTime(prev => prev + pauseDuration);
+    }
     setIsPaused(!isPaused);
   };
 
@@ -142,6 +150,7 @@ const CountdownTimer = () => {
     setIsPaused(false);
     setTimeLeft(0);
     setStartTime(null);
+    setPausedTime(0);
     setQuestions([]);
     setShowReport(false);
   };
@@ -197,7 +206,7 @@ const CountdownTimer = () => {
               </div>
               {questions.length > 0 && (
                 <div className="text-sm text-muted-foreground">
-                  Questions answered: {questions.length - 1}
+                  Questions answered: {questions.length}
                 </div>
               )}
             </div>
@@ -221,7 +230,7 @@ const CountdownTimer = () => {
           </CardContent>
         </Card>
 
-        {questions.length > 1 && (
+        {questions.length > 0 && (
           <Card className="w-full max-w-2xl mx-auto">
             <CardHeader>
               <CardTitle>Current Session Progress</CardTitle>
@@ -229,13 +238,13 @@ const CountdownTimer = () => {
             <CardContent>
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
-                  <div className="text-2xl font-bold text-foreground">{questions.length - 1}</div>
+                  <div className="text-2xl font-bold text-foreground">{questions.length}</div>
                   <div className="text-sm text-muted-foreground">Questions</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-foreground">
-                    {questions.length > 1 ? 
-                      formatTime(Math.round(questions.slice(1).reduce((sum, q) => sum + q.timeTaken, 0) / (questions.length - 1)))
+                    {questions.length > 0 ? 
+                      formatTime(Math.round(questions.reduce((sum, q) => sum + q.timeTaken, 0) / questions.length))
                       : '00:00'
                     }
                   </div>
@@ -243,7 +252,7 @@ const CountdownTimer = () => {
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-foreground">
-                    {questions.length > 1 ? formatTime(questions[questions.length - 1].timeTaken) : '00:00'}
+                    {questions.length > 0 ? formatTime(questions[questions.length - 1].timeTaken) : '00:00'}
                   </div>
                   <div className="text-sm text-muted-foreground">Last Question</div>
                 </div>

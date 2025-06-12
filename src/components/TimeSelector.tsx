@@ -10,12 +10,10 @@ interface TimeSelectorProps {
 
 const TimeSelector: React.FC<TimeSelectorProps> = ({ duration, onDurationChange }) => {
   const presetTimes = [
+    { label: '5 min', seconds: 5 * 60 },
+    { label: '10 min', seconds: 10 * 60 },
     { label: '15 min', seconds: 15 * 60 },
-    { label: '30 min', seconds: 30 * 60 },
-    { label: '45 min', seconds: 45 * 60 },
-    { label: '60 min', seconds: 60 * 60 },
-    { label: '90 min', seconds: 90 * 60 },
-    { label: '120 min', seconds: 120 * 60 },
+    { label: '20 min', seconds: 20 * 60 },
   ];
 
   const formatTime = (seconds: number) => {

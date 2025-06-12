@@ -27,17 +27,17 @@ const ProgressReport: React.FC<ProgressReportProps> = ({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const totalQuestions = questions.length - 1; // Exclude question 0
+  const totalQuestions = questions.length;
   const averageTime = totalQuestions > 0 
-    ? questions.slice(1).reduce((sum, q) => sum + q.timeTaken, 0) / totalQuestions 
+    ? questions.reduce((sum, q) => sum + q.timeTaken, 0) / totalQuestions 
     : 0;
   
   const fastestTime = totalQuestions > 0 
-    ? Math.min(...questions.slice(1).map(q => q.timeTaken))
+    ? Math.min(...questions.map(q => q.timeTaken))
     : 0;
   
   const slowestTime = totalQuestions > 0 
-    ? Math.max(...questions.slice(1).map(q => q.timeTaken))
+    ? Math.max(...questions.map(q => q.timeTaken))
     : 0;
 
   return (
@@ -104,10 +104,7 @@ const ProgressReport: React.FC<ProgressReportProps> = ({
                         {formatTime(question.elapsedTime)}
                       </TableCell>
                       <TableCell className="text-center font-mono">
-                        {question.questionNumber === 0 
-                          ? "—" 
-                          : formatTime(question.timeTaken)
-                        }
+                        {formatTime(question.timeTaken)}
                       </TableCell>
                     </TableRow>
                   ))}
