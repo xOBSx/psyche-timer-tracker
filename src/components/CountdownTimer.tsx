@@ -21,6 +21,7 @@ const CountdownTimer = () => {
   const [pausedTime, setPausedTime] = useState(0); // Total time spent paused
   const [questions, setQuestions] = useState<QuestionData[]>([]);
   const [showReport, setShowReport] = useState(false);
+  const [currentQuestionStartTime, setCurrentQuestionStartTime] = useState(0); // Track when current question started
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -64,10 +65,10 @@ const CountdownTimer = () => {
 
     const currentTime = Date.now();
     const totalElapsedTime = Math.floor((currentTime - startTime - pausedTime) / 1000);
-    const questionNumber = questions.length + 1; // Start from 1 for actual questions
+    const questionNumber = questions.length + 1;
     
-    const lastElapsedTime = questions.length > 0 ? questions[questions.length - 1].elapsedTime : 0;
-    const timeTaken = totalElapsedTime - lastElapsedTime;
+    // Calculate time taken for this specific question
+    const timeTaken = totalElapsedTime - currentQuestionStartTime;
 
     const newQuestion: QuestionData = {
       questionNumber,
@@ -76,8 +77,10 @@ const CountdownTimer = () => {
     };
 
     setQuestions(prev => [...prev, newQuestion]);
+    // Set the start time for the next question
+    setCurrentQuestionStartTime(totalElapsedTime);
     playDingSound();
-  }, [isActive, isPaused, startTime, pausedTime, questions, playDingSound]);
+  }, [isActive, isPaused, startTime, pausedTime, questions, currentQuestionStartTime, playDingSound]);
 
   // Keyboard event listener
   useEffect(() => {
@@ -127,6 +130,7 @@ const CountdownTimer = () => {
       setStartTime(Date.now());
       setPausedTime(0);
       setQuestions([]);
+      setCurrentQuestionStartTime(0); // Reset question start time
       setShowReport(false);
     }
     
@@ -151,6 +155,7 @@ const CountdownTimer = () => {
     setStartTime(null);
     setPausedTime(0);
     setQuestions([]);
+    setCurrentQuestionStartTime(0);
     setShowReport(false);
   };
 
