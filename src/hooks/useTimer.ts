@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface QuestionData {
@@ -21,12 +20,32 @@ export const useTimer = () => {
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  const recordQuestion = useCallback(() => {
+    if (!isActive || isPaused || !startTime) return;
+
+    const currentTime = Date.now();
+    const totalElapsedTime = Math.floor((currentTime - startTime - totalPausedTime) / 1000);
+    const questionNumber = questions.length + 1;
+    const timeTaken = totalElapsedTime - currentQuestionStartTime;
+
+    const newQuestion: QuestionData = {
+      questionNumber,
+      elapsedTime: totalElapsedTime,
+      timeTaken,
+    };
+
+    setQuestions(prev => [...prev, newQuestion]);
+    setCurrentQuestionStartTime(totalElapsedTime);
+  }, [isActive, isPaused, startTime, totalPausedTime, questions, currentQuestionStartTime]);
+
   // Timer logic
   useEffect(() => {
     if (isActive && !isPaused && timeLeft > 0) {
       intervalRef.current = setInterval(() => {
         setTimeLeft(time => {
           if (time <= 1) {
+            // Record the final question before ending
+            recordQuestion();
             setIsActive(false);
             setShowReport(true);
             return 0;
@@ -46,7 +65,7 @@ export const useTimer = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isActive, isPaused, timeLeft]);
+  }, [isActive, isPaused, timeLeft, recordQuestion]);
 
   const handleStart = () => {
     if (duration === 0) return;
@@ -93,28 +112,12 @@ export const useTimer = () => {
   };
 
   const handleStop = () => {
+    // Record the current question before stopping
+    recordQuestion();
     setIsActive(false);
     setIsPaused(false);
     setShowReport(true);
   };
-
-  const recordQuestion = useCallback(() => {
-    if (!isActive || isPaused || !startTime) return;
-
-    const currentTime = Date.now();
-    const totalElapsedTime = Math.floor((currentTime - startTime - totalPausedTime) / 1000);
-    const questionNumber = questions.length + 1;
-    const timeTaken = totalElapsedTime - currentQuestionStartTime;
-
-    const newQuestion: QuestionData = {
-      questionNumber,
-      elapsedTime: totalElapsedTime,
-      timeTaken,
-    };
-
-    setQuestions(prev => [...prev, newQuestion]);
-    setCurrentQuestionStartTime(totalElapsedTime);
-  }, [isActive, isPaused, startTime, totalPausedTime, questions, currentQuestionStartTime]);
 
   return {
     duration,
