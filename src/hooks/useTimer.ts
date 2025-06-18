@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface QuestionData {
@@ -48,10 +47,23 @@ export const useTimer = () => {
       intervalRef.current = setInterval(() => {
         setTimeLeft(time => {
           if (time <= 1) {
-            // Record the final question before ending
-            recordQuestion();
+            // Timer is expiring, record the final question at the exact end time
             setIsActive(false);
             setShowReport(true);
+            
+            // Record final question with the exact duration as elapsed time
+            if (startTime) {
+              const questionNumber = questions.length + 1;
+              const timeTaken = duration - currentQuestionStartTime;
+
+              const finalQuestion: QuestionData = {
+                questionNumber,
+                elapsedTime: duration,
+                timeTaken,
+              };
+
+              setQuestions(prev => [...prev, finalQuestion]);
+            }
             return 0;
           }
           return time - 1;
@@ -69,7 +81,7 @@ export const useTimer = () => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isActive, isPaused, timeLeft, recordQuestion]);
+  }, [isActive, isPaused, timeLeft, duration, startTime, questions, currentQuestionStartTime]);
 
   const handleStart = () => {
     if (duration === 0) return;
