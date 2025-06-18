@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface QuestionData {
@@ -25,6 +26,8 @@ export const useTimer = () => {
 
     const currentTime = Date.now();
     const totalElapsedTime = Math.floor((currentTime - startTime - totalPausedTime) / 1000);
+    
+    // We're finishing the current question (questions.length + 1)
     const questionNumber = questions.length + 1;
     const timeTaken = totalElapsedTime - currentQuestionStartTime;
 
@@ -35,6 +38,7 @@ export const useTimer = () => {
     };
 
     setQuestions(prev => [...prev, newQuestion]);
+    // Set the start time for the NEXT question
     setCurrentQuestionStartTime(totalElapsedTime);
   }, [isActive, isPaused, startTime, totalPausedTime, questions, currentQuestionStartTime]);
 
