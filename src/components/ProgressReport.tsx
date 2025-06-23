@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Download } from 'lucide-react';
 
 interface QuestionData {
   questionNumber: number;
@@ -39,6 +40,35 @@ const ProgressReport: React.FC<ProgressReportProps> = ({
   const slowestTime = totalQuestions > 0 
     ? Math.max(...questions.map(q => q.timeTaken))
     : 0;
+
+  const handleDownloadReport = () => {
+    const reportData = {
+      sessionDate: new Date().toISOString(),
+      totalDuration,
+      totalQuestions,
+      averageTime: Math.round(averageTime),
+      fastestTime,
+      slowestTime,
+      questions: questions.map(q => ({
+        questionNumber: q.questionNumber,
+        elapsedTime: q.elapsedTime,
+        timeTaken: q.timeTaken,
+        elapsedTimeFormatted: formatTime(q.elapsedTime),
+        timeTakenFormatted: formatTime(q.timeTaken)
+      }))
+    };
+
+    const dataStr = JSON.stringify(reportData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `practice-session-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   // Create table data with starting row for question 0, using unique keys
   const tableData = [
@@ -137,6 +167,15 @@ const ProgressReport: React.FC<ProgressReportProps> = ({
             onClick={() => window.print()}
           >
             Print Report
+          </Button>
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="px-8"
+            onClick={handleDownloadReport}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Download Report
           </Button>
         </div>
       </div>
