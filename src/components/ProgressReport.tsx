@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 interface QuestionData {
   questionNumber: number;
@@ -42,32 +42,49 @@ const ProgressReport: React.FC<ProgressReportProps> = ({
     : 0;
 
   const handleDownloadReport = () => {
-    const reportData = {
-      sessionDate: new Date().toISOString(),
-      totalDuration,
-      totalQuestions,
-      averageTime: Math.round(averageTime),
-      fastestTime,
-      slowestTime,
-      questions: questions.map(q => ({
-        questionNumber: q.questionNumber,
-        elapsedTime: q.elapsedTime,
-        timeTaken: q.timeTaken,
-        elapsedTimeFormatted: formatTime(q.elapsedTime),
-        timeTakenFormatted: formatTime(q.timeTaken)
-      }))
-    };
+    // Create summary data
+    const summaryData = [
+      ['Practice Session Report'],
+      ['Session Date', new Date().toISOString().split('T')[0]],
+      ['Total Duration', formatTime(totalDuration)],
+      ['Total Questions', totalQuestions],
+      ['Average Time', formatTime(Math.round(averageTime))],
+      ['Fastest Answer', formatTime(fastestTime)],
+      ['Slowest Answer', formatTime(slowestTime)],
+      [],
+      ['Question Details'],
+      ['Question #', 'Elapsed Time', 'Time Taken']
+    ];
 
-    const dataStr = JSON.stringify(reportData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `practice-session-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // Add question data starting with question 0
+    const questionData = [
+      [0, formatTime(0), formatTime(0)],
+      ...questions.map(q => [
+        q.questionNumber,
+        formatTime(q.elapsedTime),
+        formatTime(q.timeTaken)
+      ])
+    ];
+
+    // Combine all data
+    const worksheetData = [...summaryData, ...questionData];
+
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+
+    // Style the header rows
+    ws['!cols'] = [
+      { wch: 15 }, // Question #
+      { wch: 15 }, // Elapsed Time
+      { wch: 15 }  // Time Taken
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Practice Session');
+
+    // Generate and download the file
+    const fileName = `practice-session-${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
   };
 
   // Create table data with starting row for question 0, using unique keys
